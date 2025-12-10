@@ -2,7 +2,7 @@ from __future__ import annotations
 import math
 
 FILENAME: str = "Input.txt"
-MAX_CONNECTIONS: int = 1000
+MAX_CONNECTIONS: int = 10
 
 class Vertex:
     def __init__(self, index: int, x: int, y: int, z: int):
@@ -89,18 +89,19 @@ def find_element_in_segment(graph: dict[int, list[int]], src: int, dest: int) ->
     return find_element(graph, src, dest, visited)
 
 def explore(graph: dict[int, list[int]], node: int, visited: set[int]) -> int:
-    stack: list[int] = [node]
-    size: int = 0
+    stack = [node]
+    size = 0
 
     while stack:
-        curr: int = stack.pop()
+        curr = stack.pop()
         if curr in visited:
             continue
         visited.add(curr)
         size += 1
-        for neighbor in graph[curr]:
-            if neighbor not in visited:
-                stack.append(neighbor)
+        for neigh in graph[curr]:
+            if neigh not in visited:
+                stack.append(neigh)
+
     return size
 
 def graph_segments(graph: dict[int, list[int]]) -> list[int]:
@@ -113,18 +114,24 @@ def graph_segments(graph: dict[int, list[int]]) -> list[int]:
     
     return island_sizes
 
-def dfs(graph: dict[int, list[int]], cur: int, target: int, visited: set[int]) -> bool:
-    if cur == target: return True
+def dfs(graph: dict[int, list[int]], current: int, target: int, visited: set[int]) -> bool:
+    if current == target:
+        return True
 
-    visited.add(cur)
+    visited.add(current)
 
-    for neighbor in graph[cur]:
+    for neighbor in graph[current]:
         if neighbor not in visited:
             if dfs(graph, neighbor, target, visited):
                 return True
+
     return False
+
 def are_connected(graph: dict[int, list[int]], src: int, dest: int) -> bool:
-    if src not in graph or dest not in graph: return False
+    # If either node has no edges yet, they cannot be connected
+    if src not in graph or dest not in graph:
+        return False
+
     return dfs(graph, src, dest, set())
 
 def main() -> None:
@@ -154,11 +161,9 @@ def main() -> None:
 
     vertex_pair_distances.sort(key=lambda pair: pair.dist)
 
-    count: int = 0
     # make connections
     for pair in vertex_pair_distances:
-        if count >= MAX_CONNECTIONS:
-            break
+        temp = pair
 
         i: int = pair.src.index
         j: int = pair.dst.index
@@ -166,15 +171,13 @@ def main() -> None:
         if not are_connected(graph, i, j):
             graph[i].append(j)
             graph[j].append(i)
-        count += 1
+        if len(graph_segments(graph)) == 1:
+            print(temp) 
+            break
 
     segments: list[int] = graph_segments(graph)
     segments.sort()
 
-    product: int = 1
-    for segment in segments[len(segments) - 3:]:
-        product *= segment
-    print(product)
 
 
 if __name__ == "__main__":
